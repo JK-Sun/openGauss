@@ -1,4 +1,4 @@
-module github.com/JK-Sun/openGauss
+module github.com/JK-Sun/opengauss
 
 go 1.14
 
