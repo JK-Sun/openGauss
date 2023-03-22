@@ -55,19 +55,6 @@ func (dialector Dialector) Name() string {
 var timeZoneMatcher = regexp.MustCompile("(time_zone|TimeZone)=(.*?)($|&| )")
 
 func (dialector Dialector) Initialize(db *gorm.DB) (err error) {
-	// register callbacks
-	//if !dialector.WithoutReturning {
-	//	callbacks.RegisterDefaultCallbacks(db, &callbacks.Config{
-	//		//CreateClauses: []string{"INSERT", "VALUES", "ON CONFLICT", "RETURNING"},
-	//		//UpdateClauses: []string{"UPDATE", "SET", "WHERE", "RETURNING"},
-	//		//DeleteClauses: []string{"DELETE", "FROM", "WHERE", "RETURNING"},
-	//		CreateClauses: CreateClauses,
-	//		QueryClauses:  QueryClauses,
-	//		UpdateClauses: UpdateClauses,
-	//		DeleteClauses: DeleteClauses,
-	//	})
-	//}
-
 	if !dialector.WithoutReturning {
 		callbackConfig := &callbacks.Config{
 			CreateClauses: CreateClauses,
@@ -92,9 +79,9 @@ func (dialector Dialector) Initialize(db *gorm.DB) (err error) {
 
 		callbacks.RegisterDefaultCallbacks(db, callbackConfig)
 
-		//for k, v := range dialector.ClauseBuilders() {
-		//	db.ClauseBuilders[k] = v
-		//}
+		for k, v := range dialector.ClauseBuilders() {
+			db.ClauseBuilders[k] = v
+		}
 	}
 
 	if dialector.Conn != nil {
@@ -129,71 +116,71 @@ const (
 	ClauseFor = "FOR"
 )
 
-//func (dialector Dialector) ClauseBuilders() map[string]clause.ClauseBuilder {
-//	clauseBuilders := map[string]clause.ClauseBuilder{
-//		ClauseOnConflict: func(c clause.Clause, builder clause.Builder) {
-//			onConflict, ok := c.Expression.(clause.OnConflict)
-//			if !ok {
-//				c.Build(builder)
-//				return
-//			}
-//
-//			builder.WriteString("ON DUPLICATE KEY UPDATE ")
-//			if len(onConflict.DoUpdates) == 0 {
-//				if s := builder.(*gorm.Statement).Schema; s != nil {
-//					var column clause.Column
-//					//onConflict.DoNothing = false
-//
-//					if s.PrioritizedPrimaryField != nil {
-//						column = clause.Column{Name: s.PrioritizedPrimaryField.DBName}
-//					} else if len(s.DBNames) > 0 {
-//						column = clause.Column{Name: s.DBNames[0]}
-//					}
-//
-//					if column.Name != "" {
-//						onConflict.DoUpdates = []clause.Assignment{{Column: column, Value: column}}
-//					}
-//
-//					builder.(*gorm.Statement).AddClause(onConflict)
-//				}
-//			}
-//
-//			for idx, assignment := range onConflict.DoUpdates {
-//				if idx > 0 {
-//					builder.WriteByte(',')
-//				}
-//
-//				builder.WriteQuoted(assignment.Column)
-//				builder.WriteByte('=')
-//				if column, ok := assignment.Value.(clause.Column); ok && column.Table == "excluded" {
-//					column.Table = ""
-//					builder.WriteString("VALUES(")
-//					builder.WriteQuoted(column)
-//					builder.WriteByte(')')
-//				} else {
-//					builder.AddVar(builder, assignment.Value)
-//				}
-//			}
-//		},
-//		ClauseValues: func(c clause.Clause, builder clause.Builder) {
-//			if values, ok := c.Expression.(clause.Values); ok && len(values.Columns) == 0 {
-//				builder.WriteString("VALUES()")
-//				return
-//			}
-//			c.Build(builder)
-//		},
-//	}
-//
-//	clauseBuilders[ClauseFor] = func(c clause.Clause, builder clause.Builder) {
-//		if values, ok := c.Expression.(clause.Locking); ok && strings.EqualFold(values.Strength, "SHARE") {
-//			builder.WriteString("LOCK IN SHARE MODE")
-//			return
-//		}
-//		c.Build(builder)
-//	}
-//
-//	return clauseBuilders
-//}
+func (dialector Dialector) ClauseBuilders() map[string]clause.ClauseBuilder {
+	clauseBuilders := map[string]clause.ClauseBuilder{
+		ClauseOnConflict: func(c clause.Clause, builder clause.Builder) {
+			onConflict, ok := c.Expression.(clause.OnConflict)
+			if !ok {
+				c.Build(builder)
+				return
+			}
+
+			builder.WriteString("ON DUPLICATE KEY UPDATE ")
+			if len(onConflict.DoUpdates) == 0 {
+				if s := builder.(*gorm.Statement).Schema; s != nil {
+					var column clause.Column
+					onConflict.DoNothing = false
+
+					if s.PrioritizedPrimaryField != nil {
+						column = clause.Column{Name: s.PrioritizedPrimaryField.DBName}
+					} else if len(s.DBNames) > 0 {
+						column = clause.Column{Name: s.DBNames[0]}
+					}
+
+					if column.Name != "" {
+						onConflict.DoUpdates = []clause.Assignment{{Column: column, Value: column}}
+					}
+
+					builder.(*gorm.Statement).AddClause(onConflict)
+				}
+			}
+
+			for idx, assignment := range onConflict.DoUpdates {
+				if idx > 0 {
+					builder.WriteByte(',')
+				}
+
+				builder.WriteQuoted(assignment.Column)
+				builder.WriteByte('=')
+				if column, ok := assignment.Value.(clause.Column); ok && column.Table == "excluded" {
+					column.Table = ""
+					builder.WriteString("VALUES(")
+					builder.WriteQuoted(column)
+					builder.WriteByte(')')
+				} else {
+					builder.AddVar(builder, assignment.Value)
+				}
+			}
+		},
+		ClauseValues: func(c clause.Clause, builder clause.Builder) {
+			if values, ok := c.Expression.(clause.Values); ok && len(values.Columns) == 0 {
+				builder.WriteString("VALUES()")
+				return
+			}
+			c.Build(builder)
+		},
+	}
+
+	clauseBuilders[ClauseFor] = func(c clause.Clause, builder clause.Builder) {
+		if values, ok := c.Expression.(clause.Locking); ok && strings.EqualFold(values.Strength, "SHARE") {
+			builder.WriteString("LOCK IN SHARE MODE")
+			return
+		}
+		c.Build(builder)
+	}
+
+	return clauseBuilders
+}
 
 func (dialector Dialector) Migrator(db *gorm.DB) gorm.Migrator {
 	return Migrator{migrator.Migrator{Config: migrator.Config{
