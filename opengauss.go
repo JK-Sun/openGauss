@@ -3,6 +3,7 @@ package opengauss
 import (
 	"database/sql"
 	"fmt"
+	"gorm.io/gorm/utils"
 	"regexp"
 	"strconv"
 	"strings"
@@ -22,13 +23,23 @@ type Dialector struct {
 }
 
 type Config struct {
-	DriverName                string
-	DSN                       string
-	PreferSimpleProtocol      bool
-	WithoutReturning          bool
-	Conn                      gorm.ConnPool
-	DontSupportForShareClause bool
+	DriverName           string
+	DSN                  string
+	PreferSimpleProtocol bool
+	WithoutReturning     bool
+	Conn                 gorm.ConnPool
 }
+
+var (
+	// CreateClauses create clauses
+	CreateClauses = []string{"INSERT", "VALUES", "ON CONFLICT"}
+	// QueryClauses query clauses
+	QueryClauses = []string{}
+	// UpdateClauses update clauses
+	UpdateClauses = []string{"UPDATE", "SET", "WHERE", "ORDER BY", "LIMIT"}
+	// DeleteClauses delete clauses
+	DeleteClauses = []string{"DELETE", "FROM", "WHERE", "ORDER BY", "LIMIT"}
+)
 
 func Open(dsn string) gorm.Dialector {
 	return &Dialector{&Config{DSN: dsn}}
@@ -45,14 +56,47 @@ func (dialector Dialector) Name() string {
 var timeZoneMatcher = regexp.MustCompile("(time_zone|TimeZone)=(.*?)($|&| )")
 
 func (dialector Dialector) Initialize(db *gorm.DB) (err error) {
-	fmt.Println("======================2222222222")
 	// register callbacks
+	//if !dialector.WithoutReturning {
+	//	callbacks.RegisterDefaultCallbacks(db, &callbacks.Config{
+	//		//CreateClauses: []string{"INSERT", "VALUES", "ON CONFLICT", "RETURNING"},
+	//		//UpdateClauses: []string{"UPDATE", "SET", "WHERE", "RETURNING"},
+	//		//DeleteClauses: []string{"DELETE", "FROM", "WHERE", "RETURNING"},
+	//		CreateClauses: CreateClauses,
+	//		QueryClauses:  QueryClauses,
+	//		UpdateClauses: UpdateClauses,
+	//		DeleteClauses: DeleteClauses,
+	//	})
+	//}
+
+	callbackConfig := &callbacks.Config{
+		CreateClauses: CreateClauses,
+		QueryClauses:  QueryClauses,
+		UpdateClauses: UpdateClauses,
+		DeleteClauses: DeleteClauses,
+	}
+
 	if !dialector.WithoutReturning {
-		callbacks.RegisterDefaultCallbacks(db, &callbacks.Config{
-			CreateClauses: []string{"INSERT", "VALUES", "ON CONFLICT", "RETURNING"},
-			UpdateClauses: []string{"UPDATE", "SET", "WHERE", "RETURNING"},
-			DeleteClauses: []string{"DELETE", "FROM", "WHERE", "RETURNING"},
-		})
+		fmt.Println("======================2222222222")
+		callbackConfig.LastInsertIDReversed = true
+
+		if !utils.Contains(callbackConfig.CreateClauses, "RETURNING") {
+			callbackConfig.CreateClauses = append(callbackConfig.CreateClauses, "RETURNING")
+		}
+
+		if !utils.Contains(callbackConfig.UpdateClauses, "RETURNING") {
+			callbackConfig.UpdateClauses = append(callbackConfig.UpdateClauses, "RETURNING")
+		}
+
+		if !utils.Contains(callbackConfig.DeleteClauses, "RETURNING") {
+			callbackConfig.DeleteClauses = append(callbackConfig.DeleteClauses, "RETURNING")
+		}
+	}
+
+	callbacks.RegisterDefaultCallbacks(db, callbackConfig)
+
+	for k, v := range dialector.ClauseBuilders() {
+		db.ClauseBuilders[k] = v
 	}
 
 	if dialector.Conn != nil {
@@ -143,14 +187,12 @@ func (dialector Dialector) ClauseBuilders() map[string]clause.ClauseBuilder {
 		},
 	}
 
-	if dialector.Config.DontSupportForShareClause {
-		clauseBuilders[ClauseFor] = func(c clause.Clause, builder clause.Builder) {
-			if values, ok := c.Expression.(clause.Locking); ok && strings.EqualFold(values.Strength, "SHARE") {
-				builder.WriteString("LOCK IN SHARE MODE")
-				return
-			}
-			c.Build(builder)
+	clauseBuilders[ClauseFor] = func(c clause.Clause, builder clause.Builder) {
+		if values, ok := c.Expression.(clause.Locking); ok && strings.EqualFold(values.Strength, "SHARE") {
+			builder.WriteString("LOCK IN SHARE MODE")
+			return
 		}
+		c.Build(builder)
 	}
 
 	return clauseBuilders
