@@ -3,7 +3,6 @@ package opengauss
 import (
 	"database/sql"
 	"fmt"
-	"gorm.io/gorm/utils"
 	"regexp"
 	"strconv"
 	"strings"
@@ -80,17 +79,17 @@ func (dialector Dialector) Initialize(db *gorm.DB) (err error) {
 		fmt.Println("======================2222222222")
 		callbackConfig.LastInsertIDReversed = true
 
-		if !utils.Contains(callbackConfig.CreateClauses, "RETURNING") {
-			callbackConfig.CreateClauses = append(callbackConfig.CreateClauses, "RETURNING")
-		}
-
-		if !utils.Contains(callbackConfig.UpdateClauses, "RETURNING") {
-			callbackConfig.UpdateClauses = append(callbackConfig.UpdateClauses, "RETURNING")
-		}
-
-		if !utils.Contains(callbackConfig.DeleteClauses, "RETURNING") {
-			callbackConfig.DeleteClauses = append(callbackConfig.DeleteClauses, "RETURNING")
-		}
+		//if !utils.Contains(callbackConfig.CreateClauses, "RETURNING") {
+		//	callbackConfig.CreateClauses = append(callbackConfig.CreateClauses, "RETURNING")
+		//}
+		//
+		//if !utils.Contains(callbackConfig.UpdateClauses, "RETURNING") {
+		//	callbackConfig.UpdateClauses = append(callbackConfig.UpdateClauses, "RETURNING")
+		//}
+		//
+		//if !utils.Contains(callbackConfig.DeleteClauses, "RETURNING") {
+		//	callbackConfig.DeleteClauses = append(callbackConfig.DeleteClauses, "RETURNING")
+		//}
 	}
 
 	callbacks.RegisterDefaultCallbacks(db, callbackConfig)
