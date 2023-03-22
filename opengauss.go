@@ -126,6 +126,7 @@ func (dialector Dialector) ClauseBuilders() map[string]clause.ClauseBuilder {
 			}
 
 			builder.WriteString("ON DUPLICATE KEY UPDATE ")
+			fmt.Println("========DoUpdates: onConflict.DoUpdates")
 			if len(onConflict.DoUpdates) == 0 {
 				if s := builder.(*gorm.Statement).Schema; s != nil {
 					var column clause.Column
