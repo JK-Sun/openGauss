@@ -1,4 +1,4 @@
-module gorm.io/driver/postgres
+module github.com/JK-Sun/openGauss
 
 go 1.14
 
