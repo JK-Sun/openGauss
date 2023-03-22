@@ -63,7 +63,7 @@ func (dialector Dialector) Initialize(db *gorm.DB) (err error) {
 			DeleteClauses: DeleteClauses,
 		}
 
-		callbackConfig.LastInsertIDReversed = true
+		callbackConfig.LastInsertIDReversed = false
 
 		//if !utils.Contains(callbackConfig.CreateClauses, "RETURNING") {
 		//	callbackConfig.CreateClauses = append(callbackConfig.CreateClauses, "RETURNING")
