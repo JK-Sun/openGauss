@@ -45,6 +45,7 @@ func (dialector Dialector) Name() string {
 var timeZoneMatcher = regexp.MustCompile("(time_zone|TimeZone)=(.*?)($|&| )")
 
 func (dialector Dialector) Initialize(db *gorm.DB) (err error) {
+	fmt.Println("======================2222222222")
 	// register callbacks
 	if !dialector.WithoutReturning {
 		callbacks.RegisterDefaultCallbacks(db, &callbacks.Config{
@@ -87,6 +88,7 @@ const (
 )
 
 func (dialector Dialector) ClauseBuilders() map[string]clause.ClauseBuilder {
+	fmt.Println("======================111111111")
 	clauseBuilders := map[string]clause.ClauseBuilder{
 		ClauseOnConflict: func(c clause.Clause, builder clause.Builder) {
 			onConflict, ok := c.Expression.(clause.OnConflict)
