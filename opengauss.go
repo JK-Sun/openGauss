@@ -68,15 +68,14 @@ func (dialector Dialector) Initialize(db *gorm.DB) (err error) {
 	//	})
 	//}
 
-	callbackConfig := &callbacks.Config{
-		CreateClauses: CreateClauses,
-		QueryClauses:  QueryClauses,
-		UpdateClauses: UpdateClauses,
-		DeleteClauses: DeleteClauses,
-	}
-
 	if !dialector.WithoutReturning {
-		fmt.Println("======================2222222222")
+		callbackConfig := &callbacks.Config{
+			CreateClauses: CreateClauses,
+			QueryClauses:  QueryClauses,
+			UpdateClauses: UpdateClauses,
+			DeleteClauses: DeleteClauses,
+		}
+
 		callbackConfig.LastInsertIDReversed = true
 
 		//if !utils.Contains(callbackConfig.CreateClauses, "RETURNING") {
@@ -90,12 +89,12 @@ func (dialector Dialector) Initialize(db *gorm.DB) (err error) {
 		//if !utils.Contains(callbackConfig.DeleteClauses, "RETURNING") {
 		//	callbackConfig.DeleteClauses = append(callbackConfig.DeleteClauses, "RETURNING")
 		//}
-	}
 
-	callbacks.RegisterDefaultCallbacks(db, callbackConfig)
+		callbacks.RegisterDefaultCallbacks(db, callbackConfig)
 
-	for k, v := range dialector.ClauseBuilders() {
-		db.ClauseBuilders[k] = v
+		for k, v := range dialector.ClauseBuilders() {
+			db.ClauseBuilders[k] = v
+		}
 	}
 
 	if dialector.Conn != nil {
@@ -131,7 +130,6 @@ const (
 )
 
 func (dialector Dialector) ClauseBuilders() map[string]clause.ClauseBuilder {
-	fmt.Println("======================111111111")
 	clauseBuilders := map[string]clause.ClauseBuilder{
 		ClauseOnConflict: func(c clause.Clause, builder clause.Builder) {
 			onConflict, ok := c.Expression.(clause.OnConflict)
@@ -144,7 +142,7 @@ func (dialector Dialector) ClauseBuilders() map[string]clause.ClauseBuilder {
 			if len(onConflict.DoUpdates) == 0 {
 				if s := builder.(*gorm.Statement).Schema; s != nil {
 					var column clause.Column
-					onConflict.DoNothing = false
+					//onConflict.DoNothing = false
 
 					if s.PrioritizedPrimaryField != nil {
 						column = clause.Column{Name: s.PrioritizedPrimaryField.DBName}
