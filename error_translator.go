@@ -1,4 +1,4 @@
-package postgres
+package opengauss
 
 import (
 	"github.com/jackc/pgx/v5/pgconn"

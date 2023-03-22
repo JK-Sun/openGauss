@@ -1,4 +1,4 @@
-package postgres
+package opengauss
 
 import (
 	"database/sql"
@@ -38,7 +38,7 @@ func New(config Config) gorm.Dialector {
 }
 
 func (dialector Dialector) Name() string {
-	return "postgres"
+	return "opengauss"
 }
 
 var timeZoneMatcher = regexp.MustCompile("(time_zone|TimeZone)=(.*?)($|&| )")
