@@ -3,7 +3,6 @@ package opengauss
 import (
 	"database/sql"
 	"fmt"
-	"gorm.io/gorm/utils"
 	"regexp"
 	"strconv"
 	"strings"
@@ -32,13 +31,13 @@ type Config struct {
 
 var (
 	// CreateClauses create clauses
-	CreateClauses = []string{"INSERT", "VALUES", "ON CONFLICT"}
+	CreateClauses = []string{"INSERT", "VALUES", "ON CONFLICT", "RETURNING"}
 	// QueryClauses query clauses
 	QueryClauses = []string{}
 	// UpdateClauses update clauses
-	UpdateClauses = []string{"UPDATE", "SET", "WHERE", "ORDER BY", "LIMIT"}
+	UpdateClauses = []string{"UPDATE", "SET", "WHERE", "RETURNING"}
 	// DeleteClauses delete clauses
-	DeleteClauses = []string{"DELETE", "FROM", "WHERE", "ORDER BY", "LIMIT"}
+	DeleteClauses = []string{"DELETE", "FROM", "WHERE", "RETURNING"}
 )
 
 func Open(dsn string) gorm.Dialector {
@@ -69,14 +68,14 @@ func (dialector Dialector) Initialize(db *gorm.DB) (err error) {
 		//if !utils.Contains(callbackConfig.CreateClauses, "RETURNING") {
 		//	callbackConfig.CreateClauses = append(callbackConfig.CreateClauses, "RETURNING")
 		//}
-		//
-		if !utils.Contains(callbackConfig.UpdateClauses, "RETURNING") {
-			callbackConfig.UpdateClauses = append(callbackConfig.UpdateClauses, "RETURNING")
-		}
 
-		if !utils.Contains(callbackConfig.DeleteClauses, "RETURNING") {
-			callbackConfig.DeleteClauses = append(callbackConfig.DeleteClauses, "RETURNING")
-		}
+		//if !utils.Contains(callbackConfig.UpdateClauses, "RETURNING") {
+		//	callbackConfig.UpdateClauses = append(callbackConfig.UpdateClauses, "RETURNING")
+		//}
+
+		//if !utils.Contains(callbackConfig.DeleteClauses, "RETURNING") {
+		//	callbackConfig.DeleteClauses = append(callbackConfig.DeleteClauses, "RETURNING")
+		//}
 
 		callbacks.RegisterDefaultCallbacks(db, callbackConfig)
 
