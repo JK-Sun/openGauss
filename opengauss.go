@@ -31,7 +31,7 @@ type Config struct {
 
 var (
 	// CreateClauses create clauses
-	CreateClauses = []string{"INSERT", "VALUES", "ON CONFLICT", "RETURNING"}
+	CreateClauses = []string{"INSERT", "VALUES", "ON CONFLICT"}
 	// QueryClauses query clauses
 	QueryClauses = []string{}
 	// UpdateClauses update clauses
@@ -57,13 +57,16 @@ var timeZoneMatcher = regexp.MustCompile("(time_zone|TimeZone)=(.*?)($|&| )")
 func (dialector Dialector) Initialize(db *gorm.DB) (err error) {
 	if !dialector.WithoutReturning {
 		callbackConfig := &callbacks.Config{
-			CreateClauses: CreateClauses,
-			QueryClauses:  QueryClauses,
-			UpdateClauses: UpdateClauses,
-			DeleteClauses: DeleteClauses,
+			CreateClauses:        CreateClauses,
+			QueryClauses:         QueryClauses,
+			UpdateClauses:        UpdateClauses,
+			DeleteClauses:        DeleteClauses,
+			LastInsertIDReversed: true,
 		}
 
-		callbackConfig.LastInsertIDReversed = true
+		//if !utils.Contains(callbackConfig.CreateClauses, "RETURNING") {
+		//	callbackConfig.CreateClauses = append(callbackConfig.CreateClauses, "RETURNING")
+		//}
 
 		//if !utils.Contains(callbackConfig.CreateClauses, "RETURNING") {
 		//	callbackConfig.CreateClauses = append(callbackConfig.CreateClauses, "RETURNING")
