@@ -3,6 +3,7 @@ package opengauss
 import (
 	"database/sql"
 	"fmt"
+	"gorm.io/gorm/utils"
 	"regexp"
 	"strconv"
 	"strings"
@@ -72,13 +73,13 @@ func (dialector Dialector) Initialize(db *gorm.DB) (err error) {
 		//	callbackConfig.CreateClauses = append(callbackConfig.CreateClauses, "RETURNING")
 		//}
 
-		//if !utils.Contains(callbackConfig.UpdateClauses, "RETURNING") {
-		//	callbackConfig.UpdateClauses = append(callbackConfig.UpdateClauses, "RETURNING")
-		//}
+		if !utils.Contains(callbackConfig.UpdateClauses, "RETURNING") {
+			callbackConfig.UpdateClauses = append(callbackConfig.UpdateClauses, "RETURNING")
+		}
 
-		//if !utils.Contains(callbackConfig.DeleteClauses, "RETURNING") {
-		//	callbackConfig.DeleteClauses = append(callbackConfig.DeleteClauses, "RETURNING")
-		//}
+		if !utils.Contains(callbackConfig.DeleteClauses, "RETURNING") {
+			callbackConfig.DeleteClauses = append(callbackConfig.DeleteClauses, "RETURNING")
+		}
 
 		callbacks.RegisterDefaultCallbacks(db, callbackConfig)
 
@@ -124,7 +125,6 @@ func (dialector Dialector) ClauseBuilders() map[string]clause.ClauseBuilder {
 		ClauseOnConflict: func(c clause.Clause, builder clause.Builder) {
 			onConflict, ok := c.Expression.(clause.OnConflict)
 			if !ok {
-				builder.WriteString("RETURNING")
 				c.Build(builder)
 				return
 			}
