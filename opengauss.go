@@ -3,7 +3,6 @@ package opengauss
 import (
 	"database/sql"
 	"fmt"
-	"gorm.io/gorm/utils"
 	"regexp"
 	"strconv"
 	"strings"
@@ -57,32 +56,38 @@ var timeZoneMatcher = regexp.MustCompile("(time_zone|TimeZone)=(.*?)($|&| )")
 
 func (dialector Dialector) Initialize(db *gorm.DB) (err error) {
 	if !dialector.WithoutReturning {
-		callbackConfig := &callbacks.Config{
-			CreateClauses: CreateClauses,
-			QueryClauses:  QueryClauses,
-			UpdateClauses: UpdateClauses,
-			DeleteClauses: DeleteClauses,
-		}
+		callbacks.RegisterDefaultCallbacks(db, &callbacks.Config{
+			CreateClauses: []string{"INSERT", "VALUES", "ON DUPLICATE KEY UPDATE "},
+			UpdateClauses: []string{"UPDATE", "SET", "WHERE", "RETURNING"},
+			DeleteClauses: []string{"DELETE", "FROM", "WHERE", "RETURNING"},
+		})
 
-		callbackConfig.LastInsertIDReversed = true
-
-		//if !utils.Contains(callbackConfig.CreateClauses, "RETURNING") {
-		//	callbackConfig.CreateClauses = append(callbackConfig.CreateClauses, "RETURNING")
+		//callbackConfig := &callbacks.Config{
+		//	CreateClauses: CreateClauses,
+		//	QueryClauses:  QueryClauses,
+		//	UpdateClauses: UpdateClauses,
+		//	DeleteClauses: DeleteClauses,
 		//}
-
-		if !utils.Contains(callbackConfig.UpdateClauses, "RETURNING") {
-			callbackConfig.UpdateClauses = append(callbackConfig.UpdateClauses, "RETURNING")
-		}
-
-		if !utils.Contains(callbackConfig.DeleteClauses, "RETURNING") {
-			callbackConfig.DeleteClauses = append(callbackConfig.DeleteClauses, "RETURNING")
-		}
-
-		callbacks.RegisterDefaultCallbacks(db, callbackConfig)
-
-		for k, v := range dialector.ClauseBuilders() {
-			db.ClauseBuilders[k] = v
-		}
+		//
+		//callbackConfig.LastInsertIDReversed = true
+		//
+		////if !utils.Contains(callbackConfig.CreateClauses, "RETURNING") {
+		////	callbackConfig.CreateClauses = append(callbackConfig.CreateClauses, "RETURNING")
+		////}
+		//
+		//if !utils.Contains(callbackConfig.UpdateClauses, "RETURNING") {
+		//	callbackConfig.UpdateClauses = append(callbackConfig.UpdateClauses, "RETURNING")
+		//}
+		//
+		//if !utils.Contains(callbackConfig.DeleteClauses, "RETURNING") {
+		//	callbackConfig.DeleteClauses = append(callbackConfig.DeleteClauses, "RETURNING")
+		//}
+		//
+		//callbacks.RegisterDefaultCallbacks(db, callbackConfig)
+		//
+		//for k, v := range dialector.ClauseBuilders() {
+		//	db.ClauseBuilders[k] = v
+		//}
 	}
 
 	if dialector.Conn != nil {
