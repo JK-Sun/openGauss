@@ -58,16 +58,13 @@ var timeZoneMatcher = regexp.MustCompile("(time_zone|TimeZone)=(.*?)($|&| )")
 func (dialector Dialector) Initialize(db *gorm.DB) (err error) {
 	if !dialector.WithoutReturning {
 		callbackConfig := &callbacks.Config{
-			CreateClauses:        CreateClauses,
-			QueryClauses:         QueryClauses,
-			UpdateClauses:        UpdateClauses,
-			DeleteClauses:        DeleteClauses,
-			LastInsertIDReversed: true,
+			CreateClauses: CreateClauses,
+			QueryClauses:  QueryClauses,
+			UpdateClauses: UpdateClauses,
+			DeleteClauses: DeleteClauses,
 		}
 
-		//if !utils.Contains(callbackConfig.CreateClauses, "RETURNING") {
-		//	callbackConfig.CreateClauses = append(callbackConfig.CreateClauses, "RETURNING")
-		//}
+		callbackConfig.LastInsertIDReversed = true
 
 		//if !utils.Contains(callbackConfig.CreateClauses, "RETURNING") {
 		//	callbackConfig.CreateClauses = append(callbackConfig.CreateClauses, "RETURNING")
