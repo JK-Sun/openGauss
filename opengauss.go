@@ -124,6 +124,7 @@ func (dialector Dialector) ClauseBuilders() map[string]clause.ClauseBuilder {
 		ClauseOnConflict: func(c clause.Clause, builder clause.Builder) {
 			onConflict, ok := c.Expression.(clause.OnConflict)
 			if !ok {
+				builder.WriteString("RETURNING")
 				c.Build(builder)
 				return
 			}
